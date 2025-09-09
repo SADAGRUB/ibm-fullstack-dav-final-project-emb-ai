@@ -6,31 +6,22 @@ using IBM Watson's pre-trained EmotionPredict service.
 import requests
 import json
 
+
 def emotion_detector(text_to_analyse):
+
     url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
     headers = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
-    myobj = {"raw_document": {"text": text_to_analyse}}
+    payload = {"raw_document": {"text": text_to_analyse}}
 
-    response = requests.post(url, json=myobj, headers=headers)
+    response = requests.post(url, json=payload, headers=headers)
     formatted_response = json.loads(response.text)
-    
-    # formatted to extract the dictionary from the response
+  
     emotion_dic = formatted_response["emotionPredictions"][0]["emotion"]
-
-    anger_score = emotion_dic["anger"]
-    disgust_score = emotion_dic["disgust"]
-    fear_score = emotion_dic["fear"]
-    joy_score = emotion_dic["joy"]
-    sadness_score = emotion_dic["sadness"]
-
-    # extract the dominant emotion from the dictionary
-    dominant_emotion = max(emotion_dic, key=emotion_dic.get)
-
-    return {
-        "anger": anger_score,
-        "disgust": disgust_score,
-        "fear": fear_score,
-        "joy": joy_score,
-        "sadness": sadness_score,
-        "dominant_emotion": dominant_emotion
-    }
+    dominant_emotion = max(
+        (k for k in emotion_dic if k != "dominant_emotion"),
+        key=lambda k: emotion_dic[k]
+    )
+    emotion_dic["dominant_emotion"] = dominant_emotion
+    display_response = {key: value for key, value in emotion_dic.items()}
+    
+    return display_response
