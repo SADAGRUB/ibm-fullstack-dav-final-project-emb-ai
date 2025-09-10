@@ -14,14 +14,24 @@ def emotion_detector(text_to_analyse):
     payload = {"raw_document": {"text": text_to_analyse}}
 
     response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code == 400:
+        return {
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None
+        }
+
     formatted_response = json.loads(response.text)
-  
     emotion_dic = formatted_response["emotionPredictions"][0]["emotion"]
+
     dominant_emotion = max(
         (k for k in emotion_dic if k != "dominant_emotion"),
         key=lambda k: emotion_dic[k]
     )
     emotion_dic["dominant_emotion"] = dominant_emotion
-    display_response = {key: value for key, value in emotion_dic.items()}
-    
-    return display_response
+
+    return emotion_dic
